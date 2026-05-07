@@ -208,3 +208,124 @@ export const exportFullHistoryToPDF = async (
 
   doc.save('Historico_Completo_FinAI.pdf');
 };
+
+export const exportPremiumReportPDF = async (
+  reportData: any,
+  userName: string
+) => {
+  const doc = new jsPDF();
+  const indigo = [79, 70, 229];
+  const slate = [100, 116, 139];
+  const emerald = [16, 185, 129];
+  const rose = [244, 63, 94];
+
+  // Header Background
+  doc.setFillColor(indigo[0], indigo[1], indigo[2]);
+  doc.rect(0, 0, 210, 40, 'F');
+
+  // Header Text
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(10);
+  doc.text('RELATÓRIO PERSONALIZADO', 14, 15);
+  doc.setFontSize(22);
+  doc.text(`Olá, ${userName}!`, 14, 25);
+  doc.setFontSize(12);
+  doc.text(`Resumo Financeiro de ${reportData.month}`, 14, 32);
+
+  let currentY = 55;
+
+  // Principal Stats Cards
+  doc.setDrawColor(241, 245, 249);
+  doc.setFillColor(240, 253, 244); // Greenish
+  doc.roundedRect(14, currentY, 58, 25, 3, 3, 'FD');
+  doc.setFillColor(254, 242, 242); // Reddish
+  doc.roundedRect(76, currentY, 58, 25, 3, 3, 'FD');
+  doc.setFillColor(238, 242, 255); // Bluish
+  doc.roundedRect(138, currentY, 58, 25, 3, 3, 'FD');
+
+  doc.setFontSize(8);
+  doc.setTextColor(21, 128, 61);
+  doc.text('RECEITAS', 18, currentY + 8);
+  doc.setTextColor(185, 28, 28);
+  doc.text('DESPESAS', 80, currentY + 8);
+  doc.setTextColor(67, 56, 202);
+  doc.text('SALDO', 142, currentY + 8);
+
+  doc.setFontSize(12);
+  doc.setTextColor(22, 101, 52);
+  doc.text(reportData.income, 18, currentY + 18);
+  doc.setTextColor(153, 27, 27);
+  doc.text(reportData.expenses, 80, currentY + 18);
+  doc.setTextColor(55, 48, 163);
+  doc.text(reportData.balance, 142, currentY + 18);
+
+  currentY += 40;
+
+  // Performance Analysis
+  if (reportData.performance) {
+    doc.setFillColor(250, 250, 250);
+    doc.setDrawColor(240, 240, 240);
+    doc.roundedRect(14, currentY, 182, 30, 3, 3, 'FD');
+    
+    doc.setFontSize(12);
+    doc.setTextColor(99, 102, 241);
+    doc.text('Análise de Performance', 18, currentY + 10);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(71, 85, 105);
+    doc.text(`Taxa de Poupança: ${reportData.performance.savingsRate}%`, 18, currentY + 18);
+    doc.text(`Independência: ${reportData.performance.survivalMonths} meses de reserva`, 18, currentY + 24);
+    
+    currentY += 40;
+  }
+
+  // AI Advice
+  if (reportData.aiAdvice) {
+    doc.setFillColor(245, 243, 255);
+    doc.setDrawColor(139, 92, 246);
+    doc.roundedRect(14, currentY, 182, 35, 3, 3, 'FD');
+    
+    doc.setFontSize(12);
+    doc.setTextColor(124, 58, 237);
+    doc.text('Recomendação Inteligente (IA)', 18, currentY + 10);
+    
+    doc.setFontSize(9);
+    doc.setTextColor(76, 29, 149);
+    const splitText = doc.splitTextToSize(`"${reportData.aiAdvice}"`, 170);
+    doc.text(splitText, 18, currentY + 18);
+    
+    currentY += 45;
+  }
+
+  // Debts
+  if (reportData.debts && reportData.debts.length > 0) {
+    doc.setFontSize(14);
+    doc.setTextColor(51, 65, 85);
+    doc.text('Controle de Dívidas', 14, currentY);
+    
+    const debtRows = reportData.debts.map((d: any) => [
+      d.name,
+      d.balance,
+      d.dueDate
+    ]);
+
+    autoTable(doc, {
+      startY: currentY + 5,
+      head: [['Dívida', 'Valor', 'Vencimento']],
+      body: debtRows,
+      theme: 'striped',
+      headStyles: { fillColor: [71, 85, 105] },
+      styles: { fontSize: 10 }
+    });
+  }
+
+  // Footer
+  const pageHeight = doc.internal.pageSize.height;
+  doc.setFillColor(248, 250, 252);
+  doc.rect(0, pageHeight - 15, 210, 15, 'F');
+  doc.setFontSize(8);
+  doc.setTextColor(148, 163, 184);
+  doc.text(`Enviado via FinAI Intelligent System • ${new Date().toLocaleDateString('pt-BR')}`, 105, pageHeight - 7, { align: 'center' });
+
+  doc.save(`Relatorio_Premium_${reportData.month.replace(' ', '_')}.pdf`);
+};

@@ -76,7 +76,7 @@ import FinancialCalendar from './components/FinancialCalendar';
 import Login from './components/Login';
 import NotificationCenter, { Notification, NotificationType } from './components/NotificationCenter';
 import DebtsDashboard from './components/DebtsDashboard';
-import { exportMonthToPDF, exportFullHistoryToPDF } from './services/pdfService';
+import { exportMonthToPDF, exportFullHistoryToPDF, exportPremiumReportPDF } from './services/pdfService';
 import { getFinancialAdvice } from './services/geminiService';
 import { authService } from './services/authService';
 import { dataService } from './services/dataService';
@@ -781,8 +781,7 @@ const App: React.FC = () => {
                 E-mail
               </button>
               <button onClick={() => {
-                // Para o PDF, usamos a lógica de exportação que já temos ou uma nova similar ao e-mail
-                addNotification('Gerando PDF...', 'info');
+                addNotification('Gerando PDF Premium...', 'info');
                 const reportData = {
                   month: new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }),
                   income: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(stats.income),
@@ -793,9 +792,13 @@ const App: React.FC = () => {
                     survivalMonths: performanceStats.survivalMonths.toFixed(1)
                   } : null,
                   aiAdvice: reportOptions.aiAdvice ? aiAdvice : null,
-                  debts: reportOptions.debts ? debts : []
+                  debts: reportOptions.debts ? debts.map(d => ({
+                    name: d.name,
+                    balance: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(d.balance),
+                    dueDate: d.dueDate
+                  })) : []
                 };
-                exportFullHistoryToPDF(monthlyReports, transactions, true, 'trends-chart-container'); // Mantendo a base mas posso melhorar depois
+                exportPremiumReportPDF(reportData, currentUser?.user_metadata?.name || currentUser?.email || 'Usuário');
                 addNotification('PDF gerado com sucesso!', 'success');
               }} className="py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black shadow-xl hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
                 <FileDown className="w-5 h-5" />

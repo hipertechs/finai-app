@@ -50,6 +50,13 @@ export default async function (req: any) {
       `,
     });
 
+    if (data.error) {
+      return new Response(JSON.stringify({ error: data.error }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     return new Response(JSON.stringify(data), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },

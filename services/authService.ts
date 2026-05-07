@@ -125,5 +125,19 @@ export const authService = {
     } else {
       console.log('Seed Admin: Usuário admin@finai.com criado com sucesso!');
     }
+  },
+
+  async sendPasswordReset(email: string): Promise<boolean> {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin,
+    });
+    return !error;
+  },
+
+  async resetPassword(newPassword: string): Promise<boolean> {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+    return !error;
   }
 };

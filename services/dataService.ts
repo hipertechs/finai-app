@@ -352,18 +352,23 @@ export const dataService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
 
-    const { data, error } = await supabase.functions.invoke('send-report', {
-      body: {
-        reportData,
-        userEmail: user.email,
-        userName: user.user_metadata?.name || user.email
-      }
-    });
+    try {
+      const response = await fetch('/api/send-report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reportData,
+          userEmail: user.email,
+          userName: user.user_metadata?.name || user.email
+        })
+      });
 
-    if (error) {
-      console.error('Erro ao chamar função de e-mail:', error);
+      return response.ok;
+    } catch (error) {
+      console.error('Erro ao enviar e-mail via Vercel:', error);
       return false;
     }
-    return true;
   }
 };

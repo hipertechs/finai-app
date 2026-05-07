@@ -126,6 +126,12 @@ const App: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState(false);
 
   const [debts, setDebts] = useState<Debt[]>([]);
+  const [showReportConfig, setShowReportConfig] = useState(false);
+  const [reportOptions, setReportOptions] = useState({
+    performance: true,
+    aiAdvice: true,
+    debts: true
+  });
 
   
   // --- LOAD USER DATA FROM SUPABASE ---
@@ -364,21 +370,41 @@ const App: React.FC = () => {
   const handleSendEmailReport = async () => {
     if (!currentUser) return;
     
-    addNotification('Enviando relatório para seu e-mail...', 'info');
+    addNotification('Preparando relatório...', 'info');
     
-    const reportData = {
+    const reportData: any = {
       month: new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }),
       income: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(stats.income),
       expenses: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(stats.expenses),
       balance: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(stats.balance)
     };
 
+    if (reportOptions.performance) {
+      reportData.performance = {
+        savingsRate: performanceStats.savingsRate.toFixed(1),
+        survivalMonths: performanceStats.survivalMonths.toFixed(1)
+      };
+    }
+
+    if (reportOptions.aiAdvice) {
+      reportData.aiAdvice = aiAdvice;
+    }
+
+    if (reportOptions.debts) {
+      reportData.debts = debts.map(d => ({
+        name: d.name,
+        balance: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(d.balance),
+        dueDate: d.dueDate
+      }));
+    }
+
     const success = await dataService.sendReportEmail(reportData);
     
     if (success) {
-      addNotification('Relatório enviado com sucesso! Verifique sua caixa de entrada.', 'success');
+      addNotification('Relatório completo enviado com sucesso!', 'success');
+      setShowReportConfig(false);
     } else {
-      addNotification('Erro ao enviar e-mail. Verifique a configuração da Edge Function.', 'error');
+      addNotification('Erro ao enviar e-mail. Verifique o Resend.', 'error');
     }
   };
 
@@ -653,7 +679,7 @@ const App: React.FC = () => {
                   <p className="text-slate-500 font-medium">Histórico e tendências.</p>
                 </div>
                 <div className="flex gap-3">
-                  <button onClick={handleSendEmailReport} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow-xl shadow-indigo-600/20 active:scale-95 transition-all"><Mail className="w-4 h-4" /> E-mail</button>
+                  <button onClick={() => setShowReportConfig(true)} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow-xl shadow-indigo-600/20 active:scale-95 transition-all"><Mail className="w-4 h-4" /> E-mail</button>
                   <button onClick={() => exportFullHistoryToPDF(monthlyReports, transactions, true, 'trends-chart-container')} className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-sm shadow-xl"><FileDown className="w-4 h-4" /> PDF</button>
                 </div>
               </div>
@@ -709,6 +735,52 @@ const App: React.FC = () => {
         .animate-in { animation: fade-in 0.4s ease-out; }
         @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
+      {showReportConfig && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className={`w-full max-w-md rounded-[2.5rem] border p-8 ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100 shadow-2xl'}`}>
+            <div className="flex justify-between items-center mb-8">
+              <div>
+                <h3 className="text-2xl font-black">Configurar Relatório</h3>
+                <p className="text-sm text-slate-500 font-medium">Escolha o que incluir no seu e-mail.</p>
+              </div>
+              <button onClick={() => setShowReportConfig(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="space-y-4 mb-8">
+              <label className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 cursor-pointer border-2 border-transparent hover:border-indigo-500 transition-all">
+                <input type="checkbox" checked={reportOptions.performance} onChange={(e) => setReportOptions({ ...reportOptions, performance: e.target.checked })} className="w-5 h-5 accent-indigo-600" />
+                <div>
+                  <p className="text-sm font-bold">Análise de Performance</p>
+                  <p className="text-[10px] text-slate-500 font-medium uppercase tracking-widest">Resumo de economia e independência</p>
+                </div>
+              </label>
+
+              <label className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 cursor-pointer border-2 border-transparent hover:border-indigo-500 transition-all">
+                <input type="checkbox" checked={reportOptions.aiAdvice} onChange={(e) => setReportOptions({ ...reportOptions, aiAdvice: e.target.checked })} className="w-5 h-5 accent-indigo-600" />
+                <div>
+                  <p className="text-sm font-bold">Recomendação da IA</p>
+                  <p className="text-[10px] text-slate-500 font-medium uppercase tracking-widest">Conselhos inteligentes do Gemini</p>
+                </div>
+              </label>
+
+              <label className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 cursor-pointer border-2 border-transparent hover:border-indigo-500 transition-all">
+                <input type="checkbox" checked={reportOptions.debts} onChange={(e) => setReportOptions({ ...reportOptions, debts: e.target.checked })} className="w-5 h-5 accent-indigo-600" />
+                <div>
+                  <p className="text-sm font-bold">Controle de Dívidas</p>
+                  <p className="text-[10px] text-slate-500 font-medium uppercase tracking-widest">Resumo de pendências e parcelas</p>
+                </div>
+              </label>
+            </div>
+
+            <button onClick={handleSendEmailReport} className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-600/30 hover:bg-indigo-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+              <Mail className="w-5 h-5" />
+              Enviar Relatório Agora
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

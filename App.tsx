@@ -636,9 +636,27 @@ const App: React.FC = () => {
       {/* Modals */}
       {showForm && <TransactionForm onSubmit={handleSaveTransaction} onClose={() => setShowForm(false)} initialData={formInitialData} categories={categories} accounts={accounts} />}
       {showCategoryModal && <CategoryManager categories={categories} onClose={() => setShowCategoryModal(false)} onAdd={(c) => setCategories(p => [...p, { ...c, id: Math.random().toString() }])} onDelete={(id) => setCategories(p => p.filter(c => c.id !== id))} onUpdate={(id, c) => setCategories(p => p.map(x => x.id === id ? { ...c, id } : x))} />}
-      {showAccountModal && <AccountManager accounts={accounts} onClose={() => setShowAccountModal(false)} onAdd={(acc) => setAccounts(p => [...p, { ...acc, id: Math.random().toString() }])} onDelete={(id) => setAccounts(p => p.filter(a => a.id !== id))} />}
-      {showBudgetModal && <BudgetManager budgets={budgets} categories={categories} onClose={() => setShowBudgetModal(false)} onAdd={(b) => setBudgets(p => [...p, { ...b, id: Math.random().toString() }])} onDelete={(id) => setBudgets(p => p.filter(b => b.id !== id))} />}
-      {showGoalModal && <GoalManager goals={goals} onClose={() => setShowGoalModal(false)} onAdd={(g) => setGoals(p => [...p, { ...g, id: Math.random().toString() }])} onDelete={(id) => setGoals(p => p.filter(g => g.id !== id))} onUpdate={handleUpdateGoal} />}
+      {showAccountModal && <AccountManager accounts={accounts} onClose={() => setShowAccountModal(false)} onAdd={async (acc) => {
+        const saved = await dataService.saveAccount(acc);
+        if (saved) setAccounts(p => [...p, saved]);
+      }} onDelete={async (id) => {
+        await dataService.deleteAccount(id);
+        setAccounts(p => p.filter(a => a.id !== id));
+      }} />}
+      {showBudgetModal && <BudgetManager budgets={budgets} categories={categories} onClose={() => setShowBudgetModal(false)} onAdd={async (b) => {
+        const saved = await dataService.saveBudget(b);
+        if (saved) setBudgets(p => [...p, saved]);
+      }} onDelete={async (id) => {
+        await dataService.deleteBudget(id);
+        setBudgets(p => p.filter(b => b.id !== id));
+      }} />}
+      {showGoalModal && <GoalManager goals={goals} onClose={() => setShowGoalModal(false)} onAdd={async (g) => {
+        const saved = await dataService.saveGoal(g);
+        if (saved) setGoals(p => [...p, saved]);
+      }} onDelete={async (id) => {
+        await dataService.deleteGoal(id);
+        setGoals(p => p.filter(g => g.id !== id));
+      }} onUpdate={handleUpdateGoal} />}
       {showUserModal && <UserManager onClose={() => setShowUserModal(false)} />}
       {showImportModal && <ImportModal onClose={() => setShowImportModal(false)} onImport={handleImportTransactions} />}
       

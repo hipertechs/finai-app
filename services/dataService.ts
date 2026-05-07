@@ -205,8 +205,16 @@ export const dataService = {
     const { data, error } = await supabase
       .from('budgets')
       .select('*');
-    if (error) return [];
-    return data || [];
+    if (error) {
+      console.error('Erro ao buscar orçamentos:', error);
+      return [];
+    }
+    return (data || []).map(b => ({
+      id: b.id,
+      category: b.category,
+      limit: Number(b.limit),
+      period: b.period
+    }));
   },
 
   async saveBudget(budget: Omit<Budget, 'id'>): Promise<Budget | null> {
@@ -215,9 +223,26 @@ export const dataService = {
 
     const { data, error } = await supabase
       .from('budgets')
-      .insert([{ ...budget, user_id: user.id }])
+      .insert([{ 
+        category: budget.category,
+        limit: budget.limit,
+        period: budget.period,
+        user_id: user.id 
+      }])
       .select();
-    return data?.[0] || null;
+    
+    if (error) {
+      console.error('Erro ao salvar orçamento:', error);
+      return null;
+    }
+
+    const b = data?.[0];
+    return b ? {
+      id: b.id,
+      category: b.category,
+      limit: Number(b.limit),
+      period: b.period
+    } : null;
   },
 
   async deleteBudget(id: string): Promise<void> {

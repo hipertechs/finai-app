@@ -67,9 +67,17 @@ export const authService = {
     return user;
   },
 
-  async logout() {
+  async logout(): Promise<void> {
     await supabase.auth.signOut();
     localStorage.removeItem(SESSION_KEY);
+  },
+
+  async updateProfile(name: string): Promise<any> {
+    const { data, error } = await supabase.auth.updateUser({
+      data: { name: name }
+    });
+    if (error) throw error;
+    return data.user;
   },
 
   async getCurrentUser(): Promise<User | null> {

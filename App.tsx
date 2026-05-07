@@ -129,6 +129,8 @@ const App: React.FC = () => {
 
   const [debts, setDebts] = useState<Debt[]>([]);
   const [showReportConfig, setShowReportConfig] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [tempName, setTempName] = useState('');
   const [reportOptions, setReportOptions] = useState({
     performance: true,
     aiAdvice: true,
@@ -491,6 +493,10 @@ const App: React.FC = () => {
         activeTab={activeTab} setActiveTab={setActiveTab}
         darkMode={darkMode} setDarkMode={setDarkMode}
         onOpenCategories={() => setShowCategoryModal(true)}
+        onOpenProfile={() => {
+          setTempName(currentUser?.user_metadata?.name || '');
+          setShowProfileModal(true);
+        }}
         onOpenGoals={() => setShowGoalModal(true)}
         onOpenAccounts={() => setShowAccountModal(true)}
         onOpenBudgets={() => setShowBudgetModal(true)}
@@ -805,6 +811,53 @@ const App: React.FC = () => {
                 PDF
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showProfileModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className={`w-full max-w-md rounded-[2.5rem] border p-8 ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100 shadow-2xl'}`}>
+            <div className="flex justify-between items-center mb-8">
+              <div>
+                <h3 className="text-2xl font-black">Seu Perfil</h3>
+                <p className="text-sm text-slate-500 font-medium">Como você quer ser chamado?</p>
+              </div>
+              <button onClick={() => setShowProfileModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="space-y-6 mb-8">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome de Exibição</label>
+                <input 
+                  type="text" 
+                  value={tempName} 
+                  onChange={(e) => setTempName(e.target.value)}
+                  className={`w-full px-6 py-4 rounded-2xl border-2 transition-all outline-none font-bold ${
+                    darkMode ? 'bg-slate-800 border-slate-700 focus:border-indigo-500' : 'bg-slate-50 border-slate-100 focus:border-indigo-500'
+                  }`}
+                  placeholder="Seu nome"
+                />
+              </div>
+            </div>
+
+            <button 
+              onClick={async () => {
+                try {
+                  const updatedUser = await authService.updateProfile(tempName);
+                  setCurrentUser(updatedUser);
+                  addNotification('Perfil atualizado com sucesso!', 'success');
+                  setShowProfileModal(false);
+                } catch (err) {
+                  addNotification('Erro ao atualizar perfil.', 'error');
+                }
+              }} 
+              className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-600/30 hover:bg-indigo-700 active:scale-[0.98] transition-all"
+            >
+              Salvar Alterações
+            </button>
           </div>
         </div>
       )}

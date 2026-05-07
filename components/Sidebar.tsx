@@ -40,6 +40,7 @@ interface SidebarProps {
   // Auth Props
   user: User;
   onOpenUsers: () => void;
+  onOpenProfile: () => void;
   onLogout: () => void;
 }
 
@@ -58,6 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   setIsOpen,
   user,
   onOpenUsers,
+  onOpenProfile,
   onLogout
 }) => {
   const menuItems = [
@@ -240,17 +242,20 @@ const Sidebar: React.FC<SidebarProps> = ({
 
           {/* User Profile Footer */}
           <div className="p-4 border-t dark:border-slate-800">
-            <div className={`flex items-center gap-3 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 ${!isOpen && 'justify-center'}`}>
+            <button 
+              onClick={onOpenProfile}
+              className={`w-full flex items-center gap-3 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 transition-all ${!isOpen && 'justify-center'}`}
+            >
               <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 flex items-center justify-center shrink-0">
                 <UserIcon className="w-4 h-4" />
               </div>
               {isOpen && (
-                <div className="overflow-hidden">
+                <div className="overflow-hidden text-left">
                   <p className="text-xs font-bold truncate">{user.name}</p>
-                  <p className="text-[9px] text-slate-400 font-black uppercase tracking-tight truncate">{user.role}</p>
+                  <p className="text-[9px] text-slate-400 font-black uppercase tracking-tight truncate">Ver Perfil</p>
                 </div>
               )}
-            </div>
+            </button>
           </div>
 
           {/* Footer Toggle */}

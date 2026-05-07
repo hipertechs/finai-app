@@ -274,8 +274,31 @@ const App: React.FC = () => {
   // --- HANDLERS ---
   const handleSaveTransaction = async (newTx: Omit<Transaction, 'id'>, id?: string) => {
     if (id) {
-      // Edição via Supabase exigiria um update específico, por enquanto vamos deletar e recriar ou alertar
-      addNotification('Edição direta ainda não implementada no Supabase.', 'info');
+      const oldTx = transactions.find(t => t.id === id);
+      const updatedTx = await dataService.updateTransaction(id, newTx);
+      
+      if (updatedTx) {
+        setTransactions(prev => prev.map(t => t.id === id ? updatedTx : t));
+        
+        // Ajusta saldo se o valor ou tipo mudou
+        if (oldTx) {
+          const account = accounts.find(a => a.id === newTx.accountId);
+          if (account) {
+            // Reverte o antigo e aplica o novo
+            let balanceAdjustment = 0;
+            if (oldTx.type === 'INCOME') balanceAdjustment -= oldTx.amount;
+            else balanceAdjustment += oldTx.amount;
+
+            if (newTx.type === 'INCOME') balanceAdjustment += newTx.amount;
+            else balanceAdjustment -= newTx.amount;
+
+            const newBalance = account.balance + balanceAdjustment;
+            await dataService.updateAccount(account.id, newBalance);
+            setAccounts(prev => prev.map(acc => acc.id === account.id ? { ...acc, balance: newBalance } : acc));
+          }
+        }
+        addNotification('Transação atualizada!', 'success');
+      }
     } else {
       const savedTx = await dataService.saveTransaction(newTx);
       if (savedTx) {
@@ -290,7 +313,7 @@ const App: React.FC = () => {
         
         addNotification('Transação salva com sucesso!', 'success');
       } else {
-        addNotification('Falha ao salvar transação no banco de dados.', 'error');
+        addNotification('Falha ao salvar transação.', 'error');
       }
     }
   };
@@ -598,7 +621,12 @@ const App: React.FC = () => {
                 <h2 className="text-3xl font-black tracking-tight">Calendário de Fluxo</h2>
                 <p className="text-slate-500 font-medium">Visualize suas entradas e saídas no tempo.</p>
               </div>
-              <FinancialCalendar transactions={transactions} darkMode={darkMode} />
+              <FinancialCalendar 
+                transactions={transactions} 
+                darkMode={darkMode} 
+                onEdit={(tx) => { setFormInitialData(tx); setShowForm(true); }}
+                onDelete={handleDeleteTransaction}
+              />
             </div>
           )}
 

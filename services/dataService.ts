@@ -130,6 +130,38 @@ export const dataService = {
     };
   },
 
+  async updateTransaction(id: string, transaction: Partial<Transaction>): Promise<Transaction | null> {
+    const updateData: any = {};
+    if (transaction.description) updateData.description = transaction.description;
+    if (transaction.amount !== undefined) updateData.amount = transaction.amount;
+    if (transaction.date) updateData.date = transaction.date;
+    if (transaction.type) updateData.type = transaction.type;
+    if (transaction.category) updateData.category = transaction.category;
+    if (transaction.accountId) updateData.account_id = transaction.accountId;
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .update(updateData)
+      .eq('id', id)
+      .select();
+
+    if (error) {
+      console.error('Erro ao atualizar transação:', error);
+      return null;
+    }
+
+    const t = data?.[0];
+    return t ? {
+      id: t.id,
+      description: t.description,
+      amount: Number(t.amount),
+      date: t.date,
+      type: t.type,
+      category: t.category,
+      accountId: t.account_id
+    } : null;
+  },
+
   async deleteTransaction(id: string): Promise<void> {
     const { error } = await supabase
       .from('transactions')

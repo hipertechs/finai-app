@@ -1,14 +1,16 @@
 
 import React, { useState } from 'react';
 import { Transaction } from '../types';
-import { ChevronLeft, ChevronRight, ArrowUpCircle, ArrowDownCircle, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowUpCircle, ArrowDownCircle, Info, Edit2, Trash2 } from 'lucide-react';
 
 interface FinancialCalendarProps {
   transactions: Transaction[];
   darkMode: boolean;
+  onEdit: (tx: Transaction) => void;
+  onDelete: (id: string) => void;
 }
 
-const FinancialCalendar: React.FC<FinancialCalendarProps> = ({ transactions, darkMode }) => {
+const FinancialCalendar: React.FC<FinancialCalendarProps> = ({ transactions, darkMode, onEdit, onDelete }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
@@ -143,14 +145,24 @@ const FinancialCalendar: React.FC<FinancialCalendarProps> = ({ transactions, dar
                   <p className="text-sm text-slate-400 italic py-4">Nenhuma transação registrada para este dia.</p>
                 ) : (
                   selectedTxs.map(tx => (
-                    <div key={tx.id} className="flex justify-between items-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50">
-                      <div>
-                        <p className="text-xs font-bold">{tx.description}</p>
+                    <div key={tx.id} className="group flex justify-between items-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold truncate">{tx.description}</p>
                         <p className="text-[9px] text-slate-400 uppercase font-black">{tx.category}</p>
                       </div>
-                      <p className={`text-xs font-black ${tx.type === 'INCOME' ? 'text-emerald-500' : 'text-rose-500'}`}>
-                        {tx.type === 'INCOME' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(tx.amount)}
-                      </p>
+                      <div className="text-right flex items-center gap-3">
+                        <p className={`text-xs font-black shrink-0 ${tx.type === 'INCOME' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                          {tx.type === 'INCOME' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(tx.amount)}
+                        </p>
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => onEdit(tx)} className="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-lg text-slate-400 hover:text-indigo-500 transition-colors">
+                            <Edit2 className="w-3 h-3" />
+                          </button>
+                          <button onClick={() => onDelete(tx.id)} className="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-lg text-slate-400 hover:text-rose-500 transition-colors">
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   ))
                 )}

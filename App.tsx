@@ -361,10 +361,25 @@ const App: React.FC = () => {
     setCurrentUser(null);
   };
 
-  const handleSendEmailReport = () => {
+  const handleSendEmailReport = async () => {
     if (!currentUser) return;
-    const summary = `Relatório Financeiro FinAI\n\nReceitas: ${stats.income}\nDespesas: ${stats.expenses}\nSaldo: ${stats.balance}`;
-    window.location.href = `mailto:${currentUser.email}?subject=Relatório FinAI&body=${encodeURIComponent(summary)}`;
+    
+    addNotification('Enviando relatório para seu e-mail...', 'info');
+    
+    const reportData = {
+      month: new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }),
+      income: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(stats.income),
+      expenses: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(stats.expenses),
+      balance: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(stats.balance)
+    };
+
+    const success = await dataService.sendReportEmail(reportData);
+    
+    if (success) {
+      addNotification('Relatório enviado com sucesso! Verifique sua caixa de entrada.', 'success');
+    } else {
+      addNotification('Erro ao enviar e-mail. Verifique a configuração da Edge Function.', 'error');
+    }
   };
 
   const handleExportData = () => {

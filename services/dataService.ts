@@ -346,5 +346,24 @@ export const dataService = {
       .delete()
       .eq('id', id);
     if (error) console.error('Erro ao deletar dívida:', error);
+  },
+
+  async sendReportEmail(reportData: any): Promise<boolean> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false;
+
+    const { data, error } = await supabase.functions.invoke('send-report', {
+      body: {
+        reportData,
+        userEmail: user.email,
+        userName: user.user_metadata?.name || user.email
+      }
+    });
+
+    if (error) {
+      console.error('Erro ao chamar função de e-mail:', error);
+      return false;
+    }
+    return true;
   }
 };

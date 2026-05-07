@@ -142,10 +142,10 @@ const App: React.FC = () => {
             dataService.getDebts()
           ]);
 
-          setTransactions(dbTransactions.length > 0 ? dbTransactions : INITIAL_TRANSACTIONS);
-          setAccounts(dbAccounts.length > 0 ? dbAccounts : INITIAL_ACCOUNTS);
-          setGoals(dbGoals.length > 0 ? dbGoals : INITIAL_GOALS);
-          setBudgets(dbBudgets.length > 0 ? dbBudgets : INITIAL_BUDGETS);
+          setTransactions(dbTransactions);
+          setAccounts(dbAccounts);
+          setGoals(dbGoals);
+          setBudgets(dbBudgets);
           setDebts(dbDebts);
           
           addNotification('Dados carregados do Supabase!', 'success');

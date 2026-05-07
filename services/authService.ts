@@ -72,12 +72,20 @@ export const authService = {
     localStorage.removeItem(SESSION_KEY);
   },
 
-  async updateProfile(name: string): Promise<any> {
+  async updateProfile(name: string): Promise<User> {
     const { data, error } = await supabase.auth.updateUser({
       data: { name: name }
     });
-    if (error) throw error;
-    return data.user;
+    if (error || !data.user) throw error || new Error("Erro ao atualizar perfil");
+
+    return {
+      id: data.user.id,
+      name: data.user.user_metadata.name || 'Usuário',
+      username: data.user.user_metadata.username || data.user.email?.split('@')[0] || '',
+      email: data.user.email || '',
+      role: data.user.user_metadata.role || 'USER',
+      createdAt: data.user.created_at
+    };
   },
 
   async getCurrentUser(): Promise<User | null> {

@@ -11,7 +11,14 @@ export const dataService = {
       console.error('Erro ao buscar contas:', error);
       return [];
     }
-    return data || [];
+    return (data || []).map(acc => ({
+      id: acc.id,
+      name: acc.name,
+      type: acc.type,
+      balance: Number(acc.balance),
+      color: acc.color,
+      iconName: acc.icon_name
+    }));
   },
 
   async saveAccount(account: Omit<Account, 'id'>): Promise<Account | null> {
@@ -20,14 +27,30 @@ export const dataService = {
 
     const { data, error } = await supabase
       .from('accounts')
-      .insert([{ ...account, user_id: user.id }])
+      .insert([{ 
+        name: account.name,
+        type: account.type,
+        balance: account.balance,
+        color: account.color,
+        icon_name: account.iconName,
+        user_id: user.id 
+      }])
       .select();
     
     if (error) {
       console.error('Erro ao salvar conta:', error);
       return null;
     }
-    return data?.[0] || null;
+    
+    const acc = data?.[0];
+    return acc ? {
+      id: acc.id,
+      name: acc.name,
+      type: acc.type,
+      balance: Number(acc.balance),
+      color: acc.color,
+      iconName: acc.icon_name
+    } : null;
   },
 
   async updateAccount(id: string, balance: number): Promise<void> {
@@ -56,7 +79,15 @@ export const dataService = {
       console.error('Erro ao buscar transações:', error);
       return [];
     }
-    return data || [];
+    return (data || []).map(t => ({
+      id: t.id,
+      description: t.description,
+      amount: Number(t.amount),
+      date: t.date,
+      type: t.type,
+      category: t.category,
+      accountId: t.account_id
+    }));
   },
 
   async saveTransaction(transaction: Omit<Transaction, 'id'>): Promise<Transaction | null> {
@@ -65,14 +96,32 @@ export const dataService = {
 
     const { data, error } = await supabase
       .from('transactions')
-      .insert([{ ...transaction, user_id: user.id }])
+      .insert([{ 
+        description: transaction.description,
+        amount: transaction.amount,
+        date: transaction.date,
+        type: transaction.type,
+        category: transaction.category,
+        account_id: transaction.accountId,
+        user_id: user.id 
+      }])
       .select();
     
     if (error) {
       console.error('Erro ao salvar transação:', error);
       return null;
     }
-    return data?.[0] || null;
+
+    const t = data?.[0];
+    return t ? {
+      id: t.id,
+      description: t.description,
+      amount: Number(t.amount),
+      date: t.date,
+      type: t.type,
+      category: t.category,
+      accountId: t.account_id
+    } : null;
   },
 
   async deleteTransaction(id: string): Promise<void> {
@@ -88,8 +137,19 @@ export const dataService = {
     const { data, error } = await supabase
       .from('goals')
       .select('*');
-    if (error) return [];
-    return data || [];
+    if (error) {
+      console.error('Erro ao buscar metas:', error);
+      return [];
+    }
+    return (data || []).map(g => ({
+      id: g.id,
+      name: g.name,
+      targetAmount: Number(g.target_amount),
+      currentAmount: Number(g.current_amount),
+      deadline: g.deadline,
+      iconName: g.icon_name,
+      color: g.color
+    }));
   },
 
   async saveGoal(goal: Omit<Goal, 'id'>): Promise<Goal | null> {
@@ -98,9 +158,32 @@ export const dataService = {
 
     const { data, error } = await supabase
       .from('goals')
-      .insert([{ ...goal, user_id: user.id }])
+      .insert([{ 
+        name: goal.name,
+        target_amount: goal.targetAmount,
+        current_amount: goal.currentAmount,
+        deadline: goal.deadline,
+        icon_name: goal.iconName,
+        color: goal.color,
+        user_id: user.id 
+      }])
       .select();
-    return data?.[0] || null;
+    
+    if (error) {
+      console.error('Erro ao salvar meta:', error);
+      return null;
+    }
+
+    const g = data?.[0];
+    return g ? {
+      id: g.id,
+      name: g.name,
+      targetAmount: Number(g.target_amount),
+      currentAmount: Number(g.current_amount),
+      deadline: g.deadline,
+      iconName: g.icon_name,
+      color: g.color
+    } : null;
   },
 
   async updateGoal(id: string, currentAmount: number): Promise<void> {

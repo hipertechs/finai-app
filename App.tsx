@@ -39,7 +39,9 @@ import {
   ShieldCheck,
   Calendar,
   DownloadCloud,
-  FileUp
+  FileUp,
+  X,
+  FileText
 } from 'lucide-react';
 import { 
   XAxis, 
@@ -679,8 +681,7 @@ const App: React.FC = () => {
                   <p className="text-slate-500 font-medium">Histórico e tendências.</p>
                 </div>
                 <div className="flex gap-3">
-                  <button onClick={() => setShowReportConfig(true)} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow-xl shadow-indigo-600/20 active:scale-95 transition-all"><Mail className="w-4 h-4" /> E-mail</button>
-                  <button onClick={() => exportFullHistoryToPDF(monthlyReports, transactions, true, 'trends-chart-container')} className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-sm shadow-xl"><FileDown className="w-4 h-4" /> PDF</button>
+                  <button onClick={() => setShowReportConfig(true)} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow-xl shadow-indigo-600/20 active:scale-95 transition-all"><FileText className="w-4 h-4" /> Gerar Relatório</button>
                 </div>
               </div>
               <div className={`p-8 rounded-[2.5rem] border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100 shadow-sm'}`}>
@@ -774,10 +775,33 @@ const App: React.FC = () => {
               </label>
             </div>
 
-            <button onClick={handleSendEmailReport} className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-600/30 hover:bg-indigo-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-              <Mail className="w-5 h-5" />
-              Enviar Relatório Agora
-            </button>
+            <div className="grid grid-cols-2 gap-4">
+              <button onClick={handleSendEmailReport} className="py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-600/30 hover:bg-indigo-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                <Mail className="w-5 h-5" />
+                E-mail
+              </button>
+              <button onClick={() => {
+                // Para o PDF, usamos a lógica de exportação que já temos ou uma nova similar ao e-mail
+                addNotification('Gerando PDF...', 'info');
+                const reportData = {
+                  month: new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }),
+                  income: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(stats.income),
+                  expenses: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(stats.expenses),
+                  balance: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(stats.balance),
+                  performance: reportOptions.performance ? {
+                    savingsRate: performanceStats.savingsRate.toFixed(1),
+                    survivalMonths: performanceStats.survivalMonths.toFixed(1)
+                  } : null,
+                  aiAdvice: reportOptions.aiAdvice ? aiAdvice : null,
+                  debts: reportOptions.debts ? debts : []
+                };
+                exportFullHistoryToPDF(monthlyReports, transactions, true, 'trends-chart-container'); // Mantendo a base mas posso melhorar depois
+                addNotification('PDF gerado com sucesso!', 'success');
+              }} className="py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black shadow-xl hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                <FileDown className="w-5 h-5" />
+                PDF
+              </button>
+            </div>
           </div>
         </div>
       )}

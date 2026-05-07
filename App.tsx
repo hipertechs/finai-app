@@ -281,7 +281,6 @@ const App: React.FC = () => {
       if (savedTx) {
         setTransactions(prev => [savedTx, ...prev]);
         
-        // Atualiza saldo da conta no Supabase
         const account = accounts.find(a => a.id === newTx.accountId);
         if (account) {
           const newBalance = newTx.type === 'INCOME' ? account.balance + newTx.amount : account.balance - newTx.amount;
@@ -289,7 +288,9 @@ const App: React.FC = () => {
           setAccounts(prev => prev.map(acc => acc.id === account.id ? { ...acc, balance: newBalance } : acc));
         }
         
-        addNotification('Transação salva no Supabase!', 'success');
+        addNotification('Transação salva com sucesso!', 'success');
+      } else {
+        addNotification('Falha ao salvar transação no banco de dados.', 'error');
       }
     }
   };

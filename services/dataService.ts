@@ -108,12 +108,18 @@ export const dataService = {
       .select();
     
     if (error) {
-      console.error('Erro ao salvar transação:', error);
+      console.error('ERRO SUPABASE (saveTransaction):', error);
+      alert('Erro ao salvar transação: ' + error.message);
       return null;
     }
 
     const t = data?.[0];
-    return t ? {
+    if (!t) {
+       console.error('ERRO: Supabase não retornou a transação salva.');
+       return null;
+    }
+    
+    return {
       id: t.id,
       description: t.description,
       amount: Number(t.amount),
@@ -121,7 +127,7 @@ export const dataService = {
       type: t.type,
       category: t.category,
       accountId: t.account_id
-    } : null;
+    };
   },
 
   async deleteTransaction(id: string): Promise<void> {

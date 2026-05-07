@@ -83,7 +83,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         {/* Logo Section */}
         <div className="text-center mb-10">
           <div className="w-20 h-20 rounded-3xl overflow-hidden shadow-2xl mx-auto mb-4 border-4 border-white dark:border-slate-800 transition-transform hover:scale-105 duration-500">
-            <img src="/src/assets/logo.png" alt="FinAI Logo" className="w-full h-full object-cover" />
+            <img src="/logo.png" alt="FinAI Logo" className="w-full h-full object-cover" />
           </div>
           <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">FinAI</h1>
           <p className="text-emerald-500 text-[10px] font-black uppercase tracking-[0.2em] mt-2 ml-1">Intelligent Finance</p>

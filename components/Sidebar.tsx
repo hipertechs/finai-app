@@ -102,7 +102,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <div className="h-20 flex items-center px-6 border-b dark:border-slate-800">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg shrink-0">
-                <img src="/src/assets/logo.png" alt="FinAI Logo" className="w-full h-full object-cover" />
+                <img src="/logo.png" alt="FinAI Logo" className="w-full h-full object-cover" />
               </div>
               <div className={`transition-opacity duration-300 ${!isOpen && 'lg:opacity-0'}`}>
                 <span className="block font-black text-lg tracking-tighter leading-none">FinAI</span>

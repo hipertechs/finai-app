@@ -516,7 +516,7 @@ const App: React.FC = () => {
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
                   <h2 className="text-4xl font-black tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">
-                    Olá, {currentUser.name.split(' ')[0]}! 👋
+                    Olá, {(currentUser?.user_metadata?.name || currentUser?.email || 'Usuário').split(' ')[0]}! 👋
                   </h2>
                   <p className="text-slate-500 font-medium text-lg">Sua saúde financeira em um relance.</p>
                 </div>
@@ -526,7 +526,7 @@ const App: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Patrimônio Total</p>
-                    <h3 className="text-3xl font-black">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(stats.balance)}</h3>
+                    <h3 className="text-3xl font-black">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(stats?.balance || 0)}</h3>
                   </div>
                 </div>
               </div>
@@ -556,7 +556,7 @@ const App: React.FC = () => {
                       </div>
                       <div>
                         <h4 className="text-2xl font-black mb-1">
-                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(acc.balance)}
+                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(acc.balance || 0)}
                         </h4>
                         {acc.type === 'CREDIT_CARD' && acc.creditLimit && (
                           <div className="mt-4 pt-4 border-t dark:border-slate-800">
@@ -618,7 +618,7 @@ const App: React.FC = () => {
                           </div>
                           <div className="text-right">
                             <p className={`text-sm font-black ${tx.type === 'INCOME' ? 'text-emerald-500' : 'text-slate-800 dark:text-white'}`}>
-                              {tx.type === 'INCOME' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(tx.amount)}
+                              {tx.type === 'INCOME' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(tx.amount || 0)}
                             </p>
                             {tx.attachmentUrl && (
                               <span className="text-[8px] font-black text-indigo-500 uppercase bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full mt-1 inline-block">Recibo</span>

@@ -511,47 +511,119 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
           
           {activeTab === 'overview' && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="mb-8 flex justify-between items-end">
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-10">
+              {/* HEADER PREMIUM */}
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                  <h2 className="text-3xl font-black tracking-tight">Olá, {currentUser.name.split(' ')[0]}! 👋</h2>
-                  <p className="text-slate-500 font-medium">Sua visão geral financeira de hoje.</p>
+                  <h2 className="text-4xl font-black tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">
+                    Olá, {currentUser.name.split(' ')[0]}! 👋
+                  </h2>
+                  <p className="text-slate-500 font-medium text-lg">Sua saúde financeira em um relance.</p>
+                </div>
+                <div className={`p-6 rounded-[2.5rem] border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100 shadow-xl shadow-slate-200/50'} flex items-center gap-6`}>
+                  <div className="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/30">
+                    <Wallet className="w-7 h-7 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Patrimônio Total</p>
+                    <h3 className="text-3xl font-black">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(stats.balance)}</h3>
+                  </div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <StatCard title="Receitas" value={stats.income} icon={<TrendingUp className="w-5 h-5" />} color="emerald" />
-                <StatCard title="Despesas" value={stats.expenses} icon={<TrendingDown className="w-5 h-5" />} color="rose" />
-                <StatCard title="Saldo Total" value={stats.balance} icon={<Wallet className="w-5 h-5" />} color="indigo" />
-                <StatCard title="Investido" value={stats.savings} icon={<TrendingUp className="w-5 h-5" />} color="amber" />
-              </div>
 
+              {/* CARROSSEL DE CONTAS (ESTILO MINHAS FINANÇAS) */}
+              <section className="space-y-4">
+                <div className="flex justify-between items-center px-2">
+                  <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">Minhas Contas & Cartões</h3>
+                  <button onClick={() => setShowAccountModal(true)} className="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1">
+                    <Plus className="w-3 h-3" /> Gerenciar
+                  </button>
+                </div>
+                <div className="flex gap-6 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4">
+                  {accounts.map(acc => (
+                    <div key={acc.id} className={`min-w-[300px] p-7 rounded-[2.5rem] border relative overflow-hidden transition-all hover:scale-[1.02] hover:shadow-2xl ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100 shadow-lg shadow-slate-100'}`}>
+                      <div className={`absolute top-0 left-0 w-2 h-full ${acc.color || 'bg-indigo-600'}`} />
+                      <div className="flex justify-between items-start mb-8">
+                        <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
+                          {acc.type === 'CREDIT_CARD' ? <CreditCard className="w-6 h-6 text-slate-400" /> : <Landmark className="w-6 h-6 text-slate-400" />}
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{acc.name}</p>
+                          <p className={`text-[10px] font-bold px-2 py-0.5 rounded-full inline-block mt-1 ${acc.type === 'CREDIT_CARD' ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                            {acc.type === 'CREDIT_CARD' ? 'Cartão' : 'Conta'}
+                          </p>
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="text-2xl font-black mb-1">
+                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(acc.balance)}
+                        </h4>
+                        {acc.type === 'CREDIT_CARD' && acc.creditLimit && (
+                          <div className="mt-4 pt-4 border-t dark:border-slate-800">
+                            <div className="flex justify-between text-[10px] font-bold uppercase mb-2">
+                              <span className="text-slate-400">Limite Disponível</span>
+                              <span className="text-emerald-500">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(acc.creditLimit - acc.balance)}</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-indigo-600 rounded-full transition-all duration-1000"
+                                style={{ width: `${Math.min((acc.balance / acc.creditLimit) * 100, 100)}%` }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  <button 
+                    onClick={() => setShowAccountModal(true)}
+                    className="min-w-[200px] border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[2.5rem] flex flex-col items-center justify-center gap-3 text-slate-400 hover:text-indigo-600 hover:border-indigo-600 transition-all group"
+                  >
+                    <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center group-hover:bg-indigo-50 transition-all">
+                      <Plus className="w-6 h-6" />
+                    </div>
+                    <span className="text-xs font-black uppercase tracking-widest">Nova Conta</span>
+                  </button>
+                </div>
+              </section>
+
+              {/* GRID CENTRAL: ADVISOR E RESUMO */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-8">
-                  <AIAdvisor 
-                    advice={aiAdvice} 
-                    isLoading={isAiLoading} 
-                    onRefresh={fetchAdvice} 
-                    darkMode={darkMode} 
-                  />
-
-                  {/* Transactions Table */}
-                  <div className={`p-6 rounded-3xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100 shadow-sm'}`}>
-                    <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><History className="w-5 h-5 text-indigo-500" /> Atividades Recentes</h3>
-                    <div className="space-y-1">
+                  <AIAdvisor advice={aiAdvice} onRefresh={fetchAdvice} isLoading={isAiLoading} darkMode={darkMode} />
+                  
+                  {/* TRANSAÇÕES RECENTES (ESTILO MINHAS FINANÇAS) */}
+                  <div className={`p-8 rounded-[2.5rem] border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100 shadow-sm'}`}>
+                    <div className="flex justify-between items-center mb-8">
+                      <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                        <History className="w-4 h-4" /> Atividades Recentes
+                      </h3>
+                      <button onClick={() => setView('REPORTS')} className="text-xs font-bold text-indigo-600 hover:underline">Ver Extrato</button>
+                    </div>
+                    <div className="space-y-2">
                       {transactions.slice(0, 5).map(tx => (
-                        <div key={tx.id} className="flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
-                          <div className="flex items-center gap-4">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tx.type === 'INCOME' ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+                        <div key={tx.id} className="flex items-center justify-between p-4 rounded-3xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group">
+                          <div className="flex items-center gap-5">
+                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${tx.type === 'INCOME' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-500'}`}>
                               <CategoryIcon name={categories.find(c => c.name === tx.category)?.iconName || 'Tag'} />
                             </div>
                             <div>
-                              <p className="text-sm font-bold">{tx.description}</p>
-                              <p className="text-[10px] font-bold text-slate-400 uppercase">{tx.category}</p>
+                              <p className="text-sm font-black text-slate-800 dark:text-white">{tx.description}</p>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{tx.category}</span>
+                                <span className="text-[10px] text-slate-300">•</span>
+                                <span className="text-[10px] font-bold text-slate-400">{new Date(tx.date).toLocaleDateString('pt-BR')}</span>
+                              </div>
                             </div>
                           </div>
-                          <p className={`text-sm font-black ${tx.type === 'INCOME' ? 'text-emerald-500' : 'text-slate-800 dark:text-slate-200'}`}>
-                            {tx.type === 'INCOME' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(tx.amount)}
-                          </p>
+                          <div className="text-right">
+                            <p className={`text-sm font-black ${tx.type === 'INCOME' ? 'text-emerald-500' : 'text-slate-800 dark:text-white'}`}>
+                              {tx.type === 'INCOME' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(tx.amount)}
+                            </p>
+                            {tx.attachmentUrl && (
+                              <span className="text-[8px] font-black text-indigo-500 uppercase bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full mt-1 inline-block">Recibo</span>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -559,15 +631,53 @@ const App: React.FC = () => {
                 </div>
 
                 <div className="space-y-8">
-                   <div className={`p-6 rounded-3xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100 shadow-sm'}`}>
-                    <h3 className="font-bold mb-4">Contas</h3>
-                    {accounts.map(acc => (
-                      <div key={acc.id} className="flex justify-between items-center py-2 border-b dark:border-slate-800 last:border-0">
-                        <span className="text-xs font-bold">{acc.name}</span>
-                        <span className="text-xs font-black">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(acc.balance)}</span>
-                      </div>
-                    ))}
+                  {/* WIDGET DE ORÇAMENTOS RÁPIDOS */}
+                  <div className={`p-8 rounded-[2.5rem] border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100 shadow-sm'}`}>
+                    <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-8">Orçamentos do Mês</h3>
+                    <div className="space-y-8">
+                      {budgets.slice(0, 3).map(budget => {
+                        const spent = transactions
+                          .filter(t => t.category === budget.category && t.type === 'EXPENSE')
+                          .reduce((acc, t) => acc + t.amount, 0);
+                        const percent = Math.min((spent / budget.limit) * 100, 100);
+                        return (
+                          <div key={budget.id} className="space-y-3">
+                            <div className="flex justify-between items-end">
+                              <div>
+                                <p className="text-xs font-black text-slate-700 dark:text-white">{budget.category}</p>
+                                <p className="text-[10px] font-bold text-slate-400">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(spent)} de {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(budget.limit)}</p>
+                              </div>
+                              <span className={`text-[10px] font-black ${percent > 90 ? 'text-rose-500' : 'text-indigo-600'}`}>{percent.toFixed(0)}%</span>
+                            </div>
+                            <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full ${percent > 90 ? 'bg-rose-500 shadow-lg shadow-rose-500/20' : 'bg-indigo-600 shadow-lg shadow-indigo-600/20'} transition-all duration-1000`}
+                                style={{ width: `${percent}%` }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <button onClick={() => setShowBudgetModal(true)} className="w-full py-4 text-xs font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl hover:bg-indigo-100 transition-all mt-4">
+                        Ver Todos Orçamentos
+                      </button>
+                    </div>
                   </div>
+
+                  {/* BOTÃO FLUTUANTE DE NOVA TRANSAÇÃO (REFORÇADO) */}
+                  <button 
+                    onClick={() => { setFormInitialData(undefined); setShowForm(true); }}
+                    className="w-full p-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-[2.5rem] shadow-2xl shadow-indigo-600/30 transition-all group relative overflow-hidden"
+                  >
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-125 transition-transform duration-700" />
+                    <div className="relative flex flex-col items-center text-center gap-4">
+                      <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md mb-2">
+                        <Plus className="w-8 h-8" />
+                      </div>
+                      <h3 className="text-xl font-black uppercase tracking-tight">Nova Transação</h3>
+                      <p className="text-indigo-100 text-xs font-medium">Toque para registrar agora</p>
+                    </div>
+                  </button>
                 </div>
               </div>
             </div>

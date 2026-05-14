@@ -77,7 +77,8 @@ import Login from './components/Login';
 import NotificationCenter, { Notification, NotificationType } from './components/NotificationCenter';
 import DebtsDashboard from './components/DebtsDashboard';
 import { exportMonthToPDF, exportFullHistoryToPDF, exportPremiumReportPDF } from './services/pdfService';
-import { getFinancialAdvice } from './services/geminiService';
+import { getFinancialAdvice, FinancialAdvice } from './services/geminiService';
+import AIAdvisor from './components/AIAdvisor';
 import { authService } from './services/authService';
 import { dataService } from './services/dataService';
 import * as LucideIcons from 'lucide-react';
@@ -199,7 +200,7 @@ const App: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'reports' | 'performance' | 'calendar' | 'debts'>('overview');
   const [formInitialData, setFormInitialData] = useState<Partial<Transaction> | undefined>(undefined);
-  const [aiAdvice, setAiAdvice] = useState<string>('Analisando seu perfil financeiro...');
+  const [aiAdvice, setAiAdvice] = useState<FinancialAdvice | string | null>('Analisando seu perfil financeiro...');
   const [isAiLoading, setIsAiLoading] = useState(false);
 
   // --- COMPUTED DATA ---
@@ -506,7 +507,7 @@ const App: React.FC = () => {
         user={currentUser} onOpenUsers={() => setShowUserModal(true)} onLogout={handleLogout}
       />
 
-      <main className={`transition-all duration-300 pt-16 lg:pt-0 ${isSidebarOpen ? 'lg:pl-64' : 'lg:pl-20'}`}>
+      <main className={`transition-all duration-500 pt-16 lg:pt-0 ${isSidebarOpen ? 'lg:pl-80' : 'lg:pl-28'}`}>
         <div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
           
           {activeTab === 'overview' && (
@@ -526,19 +527,12 @@ const App: React.FC = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-8">
-                  {/* AI Advisor Card */}
-                  <div className={`p-6 rounded-3xl shadow-xl border ${darkMode ? 'bg-indigo-950/40 border-indigo-500/20' : 'bg-indigo-600 border-indigo-500 text-white'}`}>
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <SparklesIcon className="w-5 h-5" />
-                        <h3 className="font-bold">Advisor Inteligente</h3>
-                      </div>
-                      <button onClick={fetchAdvice} disabled={isAiLoading} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-                        <RefreshCcw className={`w-4 h-4 ${isAiLoading ? 'animate-spin' : ''}`} />
-                      </button>
-                    </div>
-                    <p className="text-sm font-medium leading-relaxed">{aiAdvice}</p>
-                  </div>
+                  <AIAdvisor 
+                    advice={aiAdvice} 
+                    isLoading={isAiLoading} 
+                    onRefresh={fetchAdvice} 
+                    darkMode={darkMode} 
+                  />
 
                   {/* Transactions Table */}
                   <div className={`p-6 rounded-3xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100 shadow-sm'}`}>
@@ -719,13 +713,22 @@ const App: React.FC = () => {
         await dataService.deleteAccount(id);
         setAccounts(p => p.filter(a => a.id !== id));
       }} />}
-      {showBudgetModal && <BudgetManager budgets={budgets} categories={categories} onClose={() => setShowBudgetModal(false)} onAdd={async (b) => {
-        const saved = await dataService.saveBudget(b);
-        if (saved) setBudgets(p => [...p, saved]);
-      }} onDelete={async (id) => {
-        await dataService.deleteBudget(id);
-        setBudgets(p => p.filter(b => b.id !== id));
-      }} />}
+      {showBudgetModal && (
+        <BudgetManager 
+          budgets={budgets} 
+          categories={categories} 
+          transactions={transactions}
+          onClose={() => setShowBudgetModal(false)} 
+          onAdd={async (b) => {
+            const newBudget = await dataService.saveBudget(b);
+            if (newBudget) setBudgets([...budgets, newBudget]);
+          }}
+          onDelete={async (id) => {
+            await dataService.deleteBudget(id);
+            setBudgets(budgets.filter(b => b.id !== id));
+          }}
+        />
+      )}
       {showGoalModal && <GoalManager goals={goals} onClose={() => setShowGoalModal(false)} onAdd={async (g) => {
         const saved = await dataService.saveGoal(g);
         if (saved) setGoals(p => [...p, saved]);

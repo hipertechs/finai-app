@@ -43,6 +43,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onClose, in
   const [date, setDate] = useState(initialData?.date || new Date().toISOString().split('T')[0]);
   const [accountId, setAccountId] = useState<string>(initialData?.accountId || accounts[0]?.id || '');
   const [isRecurring, setIsRecurring] = useState(initialData?.isRecurring || false);
+  const [attachmentUrl, setAttachmentUrl] = useState(initialData?.attachmentUrl || '');
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     if (initialData) {
@@ -53,8 +55,22 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onClose, in
       if (initialData.amount !== undefined) setAmount(initialData.amount.toString());
       if (initialData.accountId !== undefined) setAccountId(initialData.accountId);
       if (initialData.isRecurring !== undefined) setIsRecurring(initialData.isRecurring);
+      if (initialData.attachmentUrl !== undefined) setAttachmentUrl(initialData.attachmentUrl);
     }
   }, [initialData]);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const { dataService } = await import('../services/dataService');
+    const url = await dataService.uploadAttachment(file);
+    if (url) {
+      setAttachmentUrl(url);
+    }
+    setIsUploading(false);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,10 +83,12 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onClose, in
       category,
       date,
       accountId,
-      isRecurring
+      isRecurring,
+      attachmentUrl
     }, initialData?.id);
     onClose();
   };
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -206,6 +224,36 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onClose, in
               <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${isRecurring ? 'left-6' : 'left-1'}`} />
             </button>
           </div>
+
+          <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border-2 border-dashed dark:border-slate-700">
+            <label className="flex flex-col items-center justify-center cursor-pointer">
+              {isUploading ? (
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Enviando...</span>
+                </div>
+              ) : attachmentUrl ? (
+                <div className="flex items-center gap-3 w-full">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                    <Zap className="w-5 h-5 text-emerald-500" />
+                  </div>
+                  <div className="flex-1 overflow-hidden">
+                    <p className="text-xs font-bold truncate">Comprovante Anexado</p>
+                    <button type="button" onClick={() => setAttachmentUrl('')} className="text-[10px] text-rose-500 font-bold uppercase hover:underline">Remover</button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-2">
+                  <div className="flex gap-2">
+                    <Zap className="w-4 h-4 text-slate-400" />
+                  </div>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Anexar Comprovante (Opcional)</span>
+                  <input type="file" className="hidden" onChange={handleFileChange} accept="image/*,application/pdf" />
+                </div>
+              )}
+            </label>
+          </div>
+
 
           <button 
             type="submit" 

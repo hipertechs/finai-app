@@ -26,6 +26,9 @@ export interface Account {
   balance: number;
   color: string;
   iconName: string;
+  creditLimit?: number;
+  closingDay?: number;
+  dueDay?: number;
 }
 
 export interface Transaction {
@@ -37,6 +40,7 @@ export interface Transaction {
   type: TransactionType;
   accountId: string;
   isRecurring?: boolean;
+  attachmentUrl?: string;
 }
 
 export interface Budget {

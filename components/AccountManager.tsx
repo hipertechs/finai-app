@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { X, Plus, Wallet, CreditCard, Landmark, Trash2, Check, Banknote, Search, TrendingUp } from 'lucide-react';
 import { Account } from '../types';
@@ -36,6 +35,9 @@ const AccountManager: React.FC<AccountManagerProps> = ({ accounts, onClose, onAd
   const [type, setType] = useState<Account['type']>('BANK');
   const [selectedColor, setSelectedColor] = useState('bg-indigo-600');
   const [currentDomain, setCurrentDomain] = useState('');
+  const [creditLimit, setCreditLimit] = useState('');
+  const [closingDay, setClosingDay] = useState('');
+  const [dueDay, setDueDay] = useState('');
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,10 +47,16 @@ const AccountManager: React.FC<AccountManagerProps> = ({ accounts, onClose, onAd
       balance: parseFloat(balance),
       type,
       color: selectedColor,
-      iconName: type === 'INVESTMENT' ? 'TrendingUp' : type === 'CREDIT_CARD' ? 'CreditCard' : 'Wallet'
+      iconName: type === 'INVESTMENT' ? 'TrendingUp' : type === 'CREDIT_CARD' ? 'CreditCard' : 'Wallet',
+      creditLimit: type === 'CREDIT_CARD' ? parseFloat(creditLimit) : undefined,
+      closingDay: type === 'CREDIT_CARD' ? parseInt(closingDay) : undefined,
+      dueDay: type === 'CREDIT_CARD' ? parseInt(dueDay) : undefined
     });
     setName('');
     setBalance('');
+    setCreditLimit('');
+    setClosingDay('');
+    setDueDay('');
     setCurrentDomain('');
   };
 
@@ -129,11 +137,7 @@ const AccountManager: React.FC<AccountManagerProps> = ({ accounts, onClose, onAd
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-800 text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-500"
                       value={name} onChange={(e) => setName(e.target.value)} required
                     />
-                    <input 
-                      type="number" placeholder="Saldo Atual"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-800 text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-500"
-                      value={balance} onChange={(e) => setBalance(e.target.value)} required
-                    />
+                    
                     <select 
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-800 text-sm font-semibold outline-none"
                       value={type} onChange={(e) => setType(e.target.value as any)}
@@ -142,8 +146,37 @@ const AccountManager: React.FC<AccountManagerProps> = ({ accounts, onClose, onAd
                       <option value="CREDIT_CARD">Cartão de Crédito</option>
                       <option value="INVESTMENT">Investimento</option>
                     </select>
+
+                    <input 
+                      type="number" placeholder={type === 'CREDIT_CARD' ? 'Fatura Atual' : 'Saldo Atual'}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-800 text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-500"
+                      value={balance} onChange={(e) => setBalance(e.target.value)} required
+                    />
+
+                    {type === 'CREDIT_CARD' && (
+                      <div className="space-y-4 pt-2 border-t dark:border-slate-800">
+                        <input 
+                          type="number" placeholder="Limite do Cartão"
+                          className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-800 text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-500"
+                          value={creditLimit} onChange={(e) => setCreditLimit(e.target.value)}
+                        />
+                        <div className="grid grid-cols-2 gap-4">
+                          <input 
+                            type="number" placeholder="Dia Fechamento"
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-800 text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-500"
+                            value={closingDay} onChange={(e) => setClosingDay(e.target.value)}
+                          />
+                          <input 
+                            type="number" placeholder="Dia Vencimento"
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-800 text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-500"
+                            value={dueDay} onChange={(e) => setDueDay(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
+
                 
                 <button 
                   type="submit"

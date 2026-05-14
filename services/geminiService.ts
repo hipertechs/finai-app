@@ -2,8 +2,18 @@
 import { GoogleGenAI } from "@google/genai";
 import { Transaction } from "../types";
 
-export const getFinancialAdvice = async (transactions: Transaction[]): Promise<string> => {
-  // Use named parameter and obtain API key directly from environment variable as per guidelines
+export interface AdviceTip {
+  title: string;
+  content: string;
+}
+
+export interface FinancialAdvice {
+  intro: string;
+  tips: AdviceTip[];
+  closing: string;
+}
+
+export const getFinancialAdvice = async (transactions: Transaction[]): Promise<FinancialAdvice | string> => {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   const ai = new GoogleGenAI({ apiKey: apiKey || "" });
   
@@ -18,19 +28,37 @@ export const getFinancialAdvice = async (transactions: Transaction[]): Promise<s
     Resumo das transações:
     ${JSON.stringify(summary, null, 2)}
     
-    Responda em Português do Brasil, de forma encorajadora e profissional. 
-    Foque em redução de gastos variáveis e aumento de aportes em investimentos.
+    Responda EXCLUSIVAMENTE em formato JSON (sem markdown code blocks, apenas o objeto JSON) com a seguinte estrutura:
+    {
+      "intro": "Uma breve introdução encorajadora baseada nos dados",
+      "tips": [
+        {"title": "Título Curto da Dica 1", "content": "Descrição prática da Dica 1"},
+        {"title": "Título Curto da Dica 2", "content": "Descrição prática da Dica 2"},
+        {"title": "Título Curto da Dica 3", "content": "Descrição prática da Dica 3"}
+      ],
+      "closing": "Uma breve frase de encerramento motivadora"
+    }
+    Responda em Português do Brasil.
   `;
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-2.0-flash', // Using a more modern model if available, or stay with what works
       contents: prompt,
     });
-    // Access text property directly as per guidelines (not a method)
-    return response.text || "Não foi possível gerar dicas no momento. Continue acompanhando seus gastos!";
+    
+    const text = response.text || "";
+    try {
+      // Remove possible markdown backticks if Gemini adds them
+      const cleanJson = text.replace(/```json|```/g, '').trim();
+      return JSON.parse(cleanJson) as FinancialAdvice;
+    } catch (e) {
+      console.warn("Gemini didn't return valid JSON, returning raw text.");
+      return text;
+    }
   } catch (error) {
     console.error("Error fetching Gemini advice:", error);
     return "Mantenha o foco nos seus objetivos financeiros!";
   }
 };
+

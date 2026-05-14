@@ -17,7 +17,10 @@ export const dataService = {
       type: acc.type,
       balance: Number(acc.balance),
       color: acc.color,
-      iconName: acc.icon_name
+      iconName: acc.icon_name,
+      creditLimit: acc.credit_limit ? Number(acc.credit_limit) : undefined,
+      closingDay: acc.closing_day,
+      dueDay: acc.due_day
     }));
   },
 
@@ -33,6 +36,9 @@ export const dataService = {
         balance: account.balance,
         color: account.color,
         icon_name: account.iconName,
+        credit_limit: account.creditLimit,
+        closing_day: account.closingDay,
+        due_day: account.dueDay,
         user_id: user.id 
       }])
       .select();
@@ -49,7 +55,10 @@ export const dataService = {
       type: acc.type,
       balance: Number(acc.balance),
       color: acc.color,
-      iconName: acc.icon_name
+      iconName: acc.icon_name,
+      creditLimit: acc.credit_limit ? Number(acc.credit_limit) : undefined,
+      closingDay: acc.closing_day,
+      dueDay: acc.due_day
     } : null;
   },
 
@@ -86,7 +95,9 @@ export const dataService = {
       date: t.date,
       type: t.type,
       category: t.category,
-      accountId: t.account_id
+      accountId: t.account_id,
+      isRecurring: t.is_recurring,
+      attachmentUrl: t.attachment_url
     }));
   },
 
@@ -103,6 +114,8 @@ export const dataService = {
         type: transaction.type,
         category: transaction.category,
         account_id: transaction.accountId,
+        is_recurring: transaction.isRecurring,
+        attachment_url: transaction.attachmentUrl,
         user_id: user.id 
       }])
       .select();
@@ -158,7 +171,8 @@ export const dataService = {
       date: t.date,
       type: t.type,
       category: t.category,
-      accountId: t.account_id
+      accountId: t.account_id,
+      attachmentUrl: t.attachment_url
     } : null;
   },
 
@@ -370,5 +384,30 @@ export const dataService = {
       console.error('Erro ao enviar e-mail via Vercel:', error);
       return false;
     }
+  },
+
+  // ATTACHMENTS
+  async uploadAttachment(file: File): Promise<string | null> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random()}.${fileExt}`;
+    const filePath = `${user.id}/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('attachments')
+      .upload(filePath, file);
+
+    if (uploadError) {
+      console.error('Erro ao fazer upload:', uploadError);
+      return null;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('attachments')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
   }
 };

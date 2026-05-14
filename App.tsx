@@ -41,7 +41,8 @@ import {
   DownloadCloud,
   FileUp,
   X,
-  FileText
+  FileText,
+  Landmark
 } from 'lucide-react';
 import { 
   XAxis, 
@@ -535,7 +536,7 @@ const App: React.FC = () => {
               <section className="space-y-4">
                 <div className="flex justify-between items-center px-2">
                   <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">Minhas Contas & Cartões</h3>
-                  <button onClick={() => setShowAccountModal(true)} className="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1">
+                  <button onClick={() => setActiveTab('reports')} className="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1">
                     <Plus className="w-3 h-3" /> Gerenciar
                   </button>
                 </div>
@@ -598,7 +599,7 @@ const App: React.FC = () => {
                       <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
                         <History className="w-4 h-4" /> Atividades Recentes
                       </h3>
-                      <button onClick={() => setView('REPORTS')} className="text-xs font-bold text-indigo-600 hover:underline">Ver Extrato</button>
+                      <button onClick={() => setActiveTab('reports')} className="text-xs font-bold text-indigo-600 hover:underline">Ver Extrato</button>
                     </div>
                     <div className="space-y-2">
                       {transactions.slice(0, 5).map(tx => (

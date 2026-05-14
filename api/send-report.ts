@@ -1,3 +1,4 @@
+// @ts-ignore
 import { Resend } from 'resend';
 
 export const config = {
